@@ -1,0 +1,15 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    i18n_domain="collective.blueprint.users">
+
+  <utility
+     component=".blueprint.CreateUser"
+     name="collective.blueprint.users.create"
+     />
+
+  <utility
+     component=".blueprint.UpdateUserProperties"
+     name="collective.blueprint.users.updateproperty"
+     />
+
+</configure>
