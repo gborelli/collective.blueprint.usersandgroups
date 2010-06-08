@@ -6,8 +6,7 @@ version = '0.1'
 setup(name='collective.blueprint.users',
       version=version,
       description="blueprints for handling users in plone",
-      long_description=open("README.txt").read() + "\n" +
-                       open(os.path.join("docs", "HISTORY.txt")).read(),
+      long_description=open("README.txt").read(),
       # Get more strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
         "Framework :: Plone",
