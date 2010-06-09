@@ -3,16 +3,16 @@ import os
 
 version = '0.1'
 
-setup(name='collective.blueprint.users',
+setup(name='collective.blueprint.usersandgroups',
       version=version,
-      description="blueprints for handling users in plone",
+      description="transmogrifier blueprints for importing users and groups into plone",
       long_description=open("README.txt").read(),
       # Get more strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
         "Framework :: Plone",
         "Programming Language :: Python",
         ],
-      keywords='plone transmogrifier blueprint',
+      keywords='plone transmogrifier blueprint user group',
       author='',
       author_email='',
       url='http://svn.plone.org/svn/collective/',
@@ -26,10 +26,4 @@ setup(name='collective.blueprint.users',
           # -*- Extra requirements: -*-
           'collective.transmogrifier',
       ],
-      entry_points="""
-      # -*- Entry points: -*-
-
-      [z3c.autoinclude.plugin]
-      target = plone
-      """,
       )

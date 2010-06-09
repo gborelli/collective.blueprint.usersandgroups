@@ -1,0 +1,25 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    i18n_domain="collective.blueprint.usersandgroups">
+
+  <utility
+     component=".blueprint.CreateUser"
+     name="collective.blueprint.usersandgroups.createuser"
+     />
+
+  <utility
+     component=".blueprint.UpdateUserProperties"
+     name="collective.blueprint.usersandgroups.updateuserproperty"
+     />
+
+  <!-- TODO -->
+  <!--utility
+     component=".blueprint.CreateGroup"
+     name="collective.blueprint.usersandgroups.creategroup"
+     /-->
+  <!--utility
+     component=".blueprint.UpdateGroupProperties"
+     name="collective.blueprint.usersandgroups.updategroupproperty"
+     /-->
+
+</configure>
