@@ -25,7 +25,8 @@ class CreateUser(object):
                '_user_username' not in item.keys():
                 continue
 
-            self.regtool.addMember(item['_user_username'], item['_user__password'].encode('utf-8'))
+            if self.regtool.isMemberIdAllowed(item['_user_username']):
+                self.regtool.addMember(item['_user_username'], item['_user__password'].encode('utf-8'))
             yield item
 
 
