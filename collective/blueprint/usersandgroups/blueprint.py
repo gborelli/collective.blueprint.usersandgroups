@@ -1,6 +1,7 @@
 from zope.interface import implements, classProvides
 from collective.transmogrifier.interfaces import ISection, ISectionBlueprint
 from Products.CMFCore.utils import getToolByName
+from zope.app.component.hooks import getSite
 
 
 class CreateUser(object):
@@ -43,6 +44,8 @@ class UpdateUserProperties(object):
         self.previous = previous
         self.context = transmogrifier.context
         self.memtool = getToolByName(self.context, 'portal_membership')
+        self.gtool = getToolByName(self.context, 'portal_groups')
+        self.portal = getSite()
 
     def __iter__(self):
         for item in self.previous:
@@ -52,7 +55,7 @@ class UpdateUserProperties(object):
                 props = {}
                 for key in item:
                     if key.startswith('_user_') and \
-                                not key.startswith('_user__'):
+                            not key.startswith('_user__'):
                         props[key[6:]] = item[key]
                 member.setMemberProperties(props)
 
@@ -69,6 +72,7 @@ class UpdateUserProperties(object):
                                 item['_user_username'],
                                 None,
                                 item['roles'])
+
             yield item
 
 
