@@ -55,5 +55,19 @@ class UpdateUserProperties(object):
                         props[key[6:]] = item[key]
                 member.setMemberProperties(props)
 
+                # add member to group
+                if item.get('groups'):
+                    for groupid in item['groups']:
+                        group = self.gtool.getGroupById(groupid)
+                        if group:
+                            group.addMember(item['_user_username'])
+
+                # setting global roles
+                if item.get('roles'):
+                    self.portal.acl_users.userFolderEditUser(
+                                item['_user_username'],
+                                None,
+                                item['roles'])
+
             yield item
-             
+
