@@ -4,8 +4,8 @@ import simplejson
 
 COUNTER = 1
 GCOUNTER = 1
-TEMP = '/Users/rok/Projects/yaco/unex-pcaro/unex/export_'
-GTEMP = '/Users/rok/Projects/yaco/unex-pcaro/unex/export_G_'
+TEMP = '/opt/plone/unex_exported_users/'
+GTEMP = '/opt/plone/unex_exported_groups/'
 USERS = {}
 GROUPS = {}
 
