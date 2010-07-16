@@ -97,7 +97,12 @@ def store_groups(items):
                 group_data = {}
                 group_data['_group_username'] = str(group.getUserName())
                 group_data['_group_roles'] = group.getRoles()
-                group_data['_plone_site'] = item.absolute_url()
+                plone_site = ''
+                try:
+                    plone_site = item.absolute_url()
+                except Exception, e:
+                    import pdb;pdb.set_trace()
+                group_data['_plone_site'] = plone_site
                 group_data['_properties'] = {}
                 for pid, typ in properties:
                     val = group.getProperty(pid)
@@ -111,7 +116,7 @@ def store_groups(items):
                             val = unicode(val)
                     group_data['_properties'][pid] = val
                 write(group_data, GTEMP, GCOUNTER)
-                print '   |--> '+str(GCOUNTER)+' - '+str(group.getUserName())+' IN: '+item.absolute_url()
+                print '   |--> '+str(GCOUNTER)+' - '+str(group.getUserName())+' IN: '+plone_site
                 GCOUNTER += 1
             print '--------------------------------------------------------------------------'
             return 'OK'
