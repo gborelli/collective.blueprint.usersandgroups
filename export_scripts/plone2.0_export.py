@@ -48,12 +48,12 @@ def store_users(items):
             for member in item.portal_membership.listMembers():
                 if member.getUserName() not in USERS.keys():
                     USERS[member.getUserName()] = str(member.getUser()._getPassword())
-                else:
-                    user_data = {}
-                    user_data['_user_username'] = str(member.getUserName())
-                    user_data['_user__password'] = str(member.getUser()._getPassword())
-                    user_data['_user_roles'] = member.getRoles()
-                    user_data['_user_groups'] = []
+                user_data = {}
+                user_data['_user_username'] = str(member.getUserName())
+                user_data['_user__password'] = str(member.getUser()._getPassword())
+                user_data['_user_roles'] = member.getRoles()
+                user_data['_user_groups'] = []
+                user_data['_plone_site'] = item.absolute_url()
                 if getattr(member, 'getGroups', False):
                     user_data['_user_groups'] = member.getGroups()
                 user_data['_properties'] = {}
@@ -72,6 +72,7 @@ def store_users(items):
                 print '   |--> '+str(COUNTER)+' - '+str(member.getUserName())+'::'+str(member.getUser()._getPassword())
                 COUNTER += 1
             print '--------------------------------------------------------------------------'
+            return 'OK'
 
 
 
@@ -96,6 +97,7 @@ def store_groups(items):
                 group_data = {}
                 group_data['_group_username'] = str(group.getUserName())
                 group_data['_group_roles'] = group.getRoles()
+                group_data['_plone_site'] = item.absolute_url()
                 group_data['_properties'] = {}
                 for pid, typ in properties:
                     val = group.getProperty(pid)
@@ -109,9 +111,10 @@ def store_groups(items):
                             val = unicode(val)
                     group_data['_properties'][pid] = val
                 write(group_data, GTEMP, GCOUNTER)
-                print '   |--> '+str(GCOUNTER)+' - '+str(group.getUserName())
+                print '   |--> '+str(GCOUNTER)+' - '+str(group.getUserName())+' IN: '+item.absolute_url()
                 GCOUNTER += 1
             print '--------------------------------------------------------------------------'
+            return 'OK'
 
 
 
