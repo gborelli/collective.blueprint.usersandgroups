@@ -79,10 +79,10 @@ def store_groups(items):
     for item in items:
         if item.__class__.__name__ == 'PloneSite':
             properties = []
-            if not getattr(item, 'portal_groups', False'):
+            if not getattr(item, 'portal_groups', False):
                 continue
             gtool = item.portal_groups
-            if getattr(item, 'portal_groupdata', False'):
+            if getattr(item, 'portal_groupdata', False):
                 gdtool = item.portal_groupdata
                 for pid in gdtool.propertyIds():
                     typ = gdtool.getPropertyType(pid)
