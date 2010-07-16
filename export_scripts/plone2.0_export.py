@@ -39,7 +39,7 @@ def store_users(items):
             if not getattr(item, 'portal_membership', False):
                 continue
             properties = []
-            if  getattr(item, 'portal_memberdata', False)
+            if  getattr(item, 'portal_memberdata', False):
                 mdtool = item.portal_memberdata
                 for pid in mdtool.propertyIds():
                     typ = mdtool.getPropertyType(pid)
