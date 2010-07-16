@@ -48,17 +48,18 @@ def store_users(items):
             for member in item.portal_membership.listMembers():
                 if member.getUserName() not in USERS.keys():
                     USERS[member.getUserName()] = str(member.getUser()._getPassword())
-                user_data = {}
-                user_data['_user_username'] = str(member.getUserName())
-                user_data['_user__password'] = str(member.getUser()._getPassword())
-                user_data['_user_roles'] = member.getRoles()
-                user_data['_user_groups'] = []
+                else:
+                    user_data = {}
+                    user_data['_user_username'] = str(member.getUserName())
+                    user_data['_user__password'] = str(member.getUser()._getPassword())
+                    user_data['_user_roles'] = member.getRoles()
+                    user_data['_user_groups'] = []
                 if getattr(member, 'getGroups', False):
                     user_data['_user_groups'] = member.getGroups()
                 user_data['_properties'] = {}
                 for pid, typ in properties:
                     val = member.getProperty(pid)
-                    if typ == 'string':
+                    if typ in ('string', 'text'):
                         if getattr(val, 'decode', False):
                             try:
                                 val = val.decode(charset, 'ignore')
@@ -98,7 +99,7 @@ def store_groups(items):
                 group_data['_properties'] = {}
                 for pid, typ in properties:
                     val = group.getProperty(pid)
-                    if typ == 'string':
+                    if typ in ('string', 'text'):
                         if getattr(val, 'decode', False):
                             try:
                                 val = val.decode(charset, 'ignore')
