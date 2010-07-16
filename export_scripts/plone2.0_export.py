@@ -15,6 +15,12 @@ def export(self):
     store_users([self])
     store_users(walk_all(self))
 
+def export_groups(self):
+    global GCOUNTER
+    GCOUNTER = 1
+    store_groups([self])
+    store_groups(walk_all(self))
+
 
 def walk_all(folder):
     for item_id in folder.objectIds():
