@@ -126,6 +126,6 @@ def write(item, temp, counter):
     f = open(os.path.join(temp, SUBTEMP, str(counter)+'.json'), 'wb')
     try:
         simplejson.dump(item, f, indent=4)
-    except:
+    except Exception, e:
         import pdb; pdb.set_trace()
     f.close()
