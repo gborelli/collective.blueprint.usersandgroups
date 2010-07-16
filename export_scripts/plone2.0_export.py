@@ -36,6 +36,7 @@ def store_users(items):
     global USERS
     for item in items:
         if item.__class__.__name__ == 'PloneSite':
+            charset = item.portal_properties.site_properties.default_charset
             if not getattr(item, 'portal_membership', False):
                 continue
             properties = []
@@ -60,7 +61,7 @@ def store_users(items):
                     if typ == 'string':
                         if getattr(val, 'decode', False):
                             try:
-                                val = val.decode(self.charset, 'ignore')
+                                val = val.decode(charset, 'ignore')
                             except UnicodeEncodeError:
                                 val = unicode(val)
                         else:
@@ -78,6 +79,7 @@ def store_groups(items):
     global GROUPS
     for item in items:
         if item.__class__.__name__ == 'PloneSite':
+            charset = item.portal_properties.site_properties.default_charset
             properties = []
             if not getattr(item, 'portal_groups', False):
                 continue
@@ -99,7 +101,7 @@ def store_groups(items):
                     if typ == 'string':
                         if getattr(val, 'decode', False):
                             try:
-                                val = val.decode(self.charset, 'ignore')
+                                val = val.decode(charset, 'ignore')
                             except UnicodeEncodeError:
                                 val = unicode(val)
                         else:
