@@ -36,7 +36,7 @@ def store_users(items):
     global USERS
     for item in items:
         if item.__class__.__name__ == 'PloneSite':
-            if not getattr(item, 'portal_membership', False'):
+            if not getattr(item, 'portal_membership', False):
                 continue
             properties = []
             if  getattr(item, 'portal_memberdata', False)
