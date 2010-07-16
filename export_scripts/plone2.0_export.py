@@ -7,7 +7,6 @@ GCOUNTER = 1
 TEMP = '/opt/plone/unex_exported_users'
 GTEMP = '/opt/plone/unex_exported_groups'
 USERS = {}
-GROUPS = []
 
 def export(self):
     global COUNTER
@@ -18,8 +17,8 @@ def export(self):
 def export_groups(self):
     global GCOUNTER
     GCOUNTER = 1
-    store_groups([self])
-    store_groups(walk_all(self))
+    store_groups([self], 1)
+    store_groups(walk_all(self), 0)
 
 
 def walk_all(folder):
@@ -76,9 +75,10 @@ def store_users(items):
 
 
 
-def store_groups(items):
+def store_groups(items, root):
     global GCOUNTER
-    global GROUPS
+    groups = {}
+    group_names = {}
     for item in items:
         if item.__class__.__name__ == 'PloneSite':
             charset = item.portal_properties.site_properties.default_charset
@@ -92,18 +92,17 @@ def store_groups(items):
                     typ = gdtool.getPropertyType(pid)
                     properties.append((pid, typ))
             for group in item.portal_groups.listGroups():
-                if group.getUserName() not in GROUPS:
-                    GROUPS.append(group.getUserName())
+                group_name = str(group.getUserName())
+                if group.getUserName() not in groups.keys():
+                    group_names[group_name] = ''
+                else:
+                    group_names[group_name] = item.getId()
                 group_data = {}
-                group_data['_group_username'] = str(group.getUserName())
-                group_data['_group_roles'] = group.getRoles()
-                plone_site = ''
-                try:
-                    plone_site = item.absolute_url()
-                except Exception, e:
-                    import pdb;pdb.set_trace()
-                group_data['_plone_site'] = plone_site
+                group_data['_name'] = group_name
+                group_data['_roles'] = group.getRoles()
+                group_data['_plone_site'] = '/'.join(item.getPhysicalPath())
                 group_data['_properties'] = {}
+                group_data['_root_group'] = root
                 for pid, typ in properties:
                     val = group.getProperty(pid)
                     if typ in ('string', 'text'):
@@ -115,11 +114,14 @@ def store_groups(items):
                         else:
                             val = unicode(val)
                     group_data['_properties'][pid] = val
-                write(group_data, GTEMP, GCOUNTER)
-                print '   |--> '+str(GCOUNTER)+' - '+str(group.getUserName())+' IN: '+plone_site
-                GCOUNTER += 1
-            print '--------------------------------------------------------------------------'
-            return 'OK'
+                groups[group_name] = group_data
+    for group_name, group_data in groups.items():
+        if group_names[group_name]:
+            group_data['_name'] += '_'+group_names[group_name]
+        write(group_data, GTEMP, GCOUNTER)
+        print '   |--> '+str(GCOUNTER)+' - '+str(group.getUserName())+' IN: '+plone_site
+        GCOUNTER += 1
+    print '--------------------------------------------------------------------------'
 
 
 
