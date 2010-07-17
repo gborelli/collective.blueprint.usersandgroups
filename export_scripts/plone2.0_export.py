@@ -3,23 +3,16 @@ import os
 import simplejson
 
 COUNTER = 1
-GCOUNTER = 1
-TEMP = '/opt/plone/unex_exported_users'
-GTEMP = '/opt/plone/unex_exported_groups'
+TEMP = '/opt/plone/unex_exported_users_and_groups'
+GROUPS = {}
 USERS = {}
 
 def export(self):
     global COUNTER
     COUNTER = 1
-    store_users([self])
-    store_users(walk_all(self))
-
-def export_groups(self):
-    global GCOUNTER
-    GCOUNTER = 1
-    store_groups([self], 1)
-    store_groups(walk_all(self), 0)
-
+    get_users_and_groups([self], 1)
+    get_users_and_groups(walk_all(self), 0)
+    store_users_and_groups()
 
 def walk_all(folder):
     for item_id in folder.objectIds():
@@ -30,12 +23,45 @@ def walk_all(folder):
             for subitem in walk_all(item):
                 yield subitem
 
-def store_users(items):
-    global COUNTER
+def get_users_and_groups(items, root):
+    global GROUPS
+    global GROUP_NAMES
     global USERS
     for item in items:
         if item.__class__.__name__ == 'PloneSite':
             charset = item.portal_properties.site_properties.default_charset
+            properties = []
+            if getattr(item, 'portal_groups', False):
+                gtool = item.portal_groups
+                if getattr(item, 'portal_groupdata', False):
+                    gdtool = item.portal_groupdata
+                    for pid in gdtool.propertyIds():
+                        typ = gdtool.getPropertyType(pid)
+                        properties.append((pid, typ))
+                for group in item.portal_groups.listGroups():
+                    group_name = str(group.getUserName())
+                    if group.getUserName() not in GROUPS.keys():
+                        GROUP_NAMES[group_name] = ''
+                    else:
+                        GROUP_NAMES[group_name] = item.getId()
+                    group_data = {}
+                    group_data['_name'] = group_name
+                    group_data['_roles'] = group.getRoles()
+                    group_data['_plone_site'] = '/'.join(item.getPhysicalPath())
+                    group_data['_properties'] = {}
+                    group_data['_root_group'] = root
+                    for pid, typ in properties:
+                        val = group.getProperty(pid)
+                        if typ in ('string', 'text'):
+                            if getattr(val, 'decode', False):
+                                try:
+                                    val = val.decode(charset, 'ignore')
+                                except UnicodeEncodeError:
+                                    val = unicode(val)
+                            else:
+                                val = unicode(val)
+                        group_data['_properties'][pid] = val
+                    GROUPS[group_name] = group_data
             if not getattr(item, 'portal_membership', False):
                 continue
             properties = []
@@ -45,14 +71,19 @@ def store_users(items):
                     typ = mdtool.getPropertyType(pid)
                     properties.append((pid, typ))
             for member in item.portal_membership.listMembers():
-                if member.getUserName() not in USERS.keys():
-                    USERS[member.getUserName()] = str(member.getUser()._getPassword())
                 user_data = {}
-                user_data['_user_username'] = str(member.getUserName())
-                user_data['_user__password'] = str(member.getUser()._getPassword())
-                user_data['_user_roles'] = member.getRoles()
-                user_data['_user_groups'] = []
-                user_data['_plone_site'] = item.absolute_url()
+                username = str(member.getUserName())
+                user_data['_username'] = user_name
+                user_data['_password'] = str(member.getUser()._getPassword())
+                user_data['_root_user'] = root
+                user_data['_root_roles'] = []
+                user_data['_local_roles'] = []
+                if root:
+                    user_data['_root_roles'] = member.getRoles()
+                else:
+                    user_data['_local_roles'] = member.getRoles()
+                user_data['_groups'] = []
+                user_data['_plone_site'] = '/'.join(item.getPhysicalPath())
                 if getattr(member, 'getGroups', False):
                     user_data['_user_groups'] = member.getGroups()
                 user_data['_properties'] = {}
@@ -67,72 +98,35 @@ def store_users(items):
                         else:
                             val = unicode(val)
                     user_data['_properties'][pid] = val
-                write(user_data, TEMP, COUNTER)
-                print '   |--> '+str(COUNTER)+' - '+str(member.getUserName())+'::'+str(member.getUser()._getPassword())
-                COUNTER += 1
-            print '--------------------------------------------------------------------------'
-            return 'OK'
+                USERS[user_name] = user_data
+
+def store_users_and_groups():
+    global GROUPS
+    global USERS
+    global COUNTER
+    for group_name, group_data in GROUPS.items():
+        if GROUPS_NAMES[group_name]:
+            group_data['_name'] += '_'+GROUP_NAMES[group_name]
+        write(group_data)
+        print '   |--> '+str(COUNTER)+' - '+str(group_data['_name'])+' IN: '+group_data['_plone_site']
+        COUNTER += 1
+    for user_name, user_data in USERS.items():
+        groups = []
+        for group in user_data['_groups']:
+            groups.append(GROUP_NAMES[group])
+        user_data['_groups'] = groups
+        write(user_data)
+        COUNTER += 1
+        print '   |--> '+str(COUNTER)+' - '+str(user_data['_username'])+' IN: '+user_data['_plone_site']
+    print '----------------------------  --------------------------------------'
 
 
 
-def store_groups(items, root):
-    global GCOUNTER
-    groups = {}
-    group_names = {}
-    for item in items:
-        if item.__class__.__name__ == 'PloneSite':
-            charset = item.portal_properties.site_properties.default_charset
-            properties = []
-            if not getattr(item, 'portal_groups', False):
-                continue
-            gtool = item.portal_groups
-            if getattr(item, 'portal_groupdata', False):
-                gdtool = item.portal_groupdata
-                for pid in gdtool.propertyIds():
-                    typ = gdtool.getPropertyType(pid)
-                    properties.append((pid, typ))
-            for group in item.portal_groups.listGroups():
-                group_name = str(group.getUserName())
-                if group.getUserName() not in groups.keys():
-                    group_names[group_name] = ''
-                else:
-                    group_names[group_name] = item.getId()
-                group_data = {}
-                group_data['_name'] = group_name
-                group_data['_roles'] = group.getRoles()
-                group_data['_plone_site'] = '/'.join(item.getPhysicalPath())
-                group_data['_properties'] = {}
-                group_data['_root_group'] = root
-                for pid, typ in properties:
-                    val = group.getProperty(pid)
-                    if typ in ('string', 'text'):
-                        if getattr(val, 'decode', False):
-                            try:
-                                val = val.decode(charset, 'ignore')
-                            except UnicodeEncodeError:
-                                val = unicode(val)
-                        else:
-                            val = unicode(val)
-                    group_data['_properties'][pid] = val
-                groups[group_name] = group_data
-    for group_name, group_data in groups.items():
-        if group_names[group_name]:
-            group_data['_name'] += '_'+group_names[group_name]
-        write(group_data, GTEMP, GCOUNTER)
-        print '   |--> '+str(GCOUNTER)+' - '+str(group.getUserName())+' IN: '+plone_site
-        GCOUNTER += 1
-    print '--------------------------------------------------------------------------'
+def write(item):
+    SUBTEMP = str(COUNTER/1000) # 1000 files per folder
+    if not os.path.isdir(os.path.join(TEMP, SUBTEMP)):
+        os.mkdir(os.path.join(TEMP, SUBTEMP))
 
-
-
-def write(item, temp, counter):
-    SUBTEMP = str(counter/1000) # 1000 files per folder
-    if not os.path.isdir(os.path.join(temp, SUBTEMP)):
-        os.mkdir(os.path.join(temp, SUBTEMP))
-
-    f = open(os.path.join(temp, SUBTEMP, str(counter)+'.json'), 'wb')
-    try:
-        simplejson.dump(item, f, indent=4)
-    except Exception, e:
-        import pdb; pdb.set_trace()
+    f = open(os.path.join(TEMP, SUBTEMP, str(TEMP)+'.json'), 'wb')
+    simplejson.dump(item, f, indent=4)
     f.close()
