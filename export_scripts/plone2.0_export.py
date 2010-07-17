@@ -3,16 +3,17 @@ import os
 import simplejson
 
 COUNTER = 1
-TEMP = '/opt/plone/unex_exported_users_and_groups'
+UTEMP = '/opt/plone/unex_exported_users'
+GTEMP = '/opt/plone/unex_exported_groups'
 GROUPS = {}
+GROUP_NAMES = {}
 USERS = {}
 
 def export(self):
-    global COUNTER
-    COUNTER = 1
     get_users_and_groups([self], 1)
     get_users_and_groups(walk_all(self), 0)
     store_users_and_groups()
+    return 'OK'
 
 def walk_all(folder):
     for item_id in folder.objectIds():
@@ -28,7 +29,8 @@ def get_users_and_groups(items, root):
     global GROUP_NAMES
     global USERS
     for item in items:
-        if item.__class__.__name__ == 'PloneSite':
+        if item.__class__.__name__ == 'PloneSite' and \
+                        not item.getId().startswith('copy_of'):
             charset = item.portal_properties.site_properties.default_charset
             properties = []
             if getattr(item, 'portal_groups', False):
@@ -39,11 +41,13 @@ def get_users_and_groups(items, root):
                         typ = gdtool.getPropertyType(pid)
                         properties.append((pid, typ))
                 for group in item.portal_groups.listGroups():
-                    group_name = str(group.getUserName())
-                    if group.getUserName() not in GROUPS.keys():
-                        GROUP_NAMES[group_name] = ''
+                    group_name = str(group.getUserName()).replace(' ', '_').replace('-', '_')
+                    if group.getUserName() in GROUPS.keys():
+                        GROUP_NAMES[group_name] = 1
+                        group_name = group_name+'_'+item.getId()
+                        GROUP_NAMES[group_name] = 0
                     else:
-                        GROUP_NAMES[group_name] = item.getId()
+                        GROUP_NAMES[group_name] = 0
                     group_data = {}
                     group_data['_name'] = group_name
                     group_data['_roles'] = group.getRoles()
@@ -72,7 +76,7 @@ def get_users_and_groups(items, root):
                     properties.append((pid, typ))
             for member in item.portal_membership.listMembers():
                 user_data = {}
-                username = str(member.getUserName())
+                user_name = str(member.getUserName())
                 user_data['_username'] = user_name
                 user_data['_password'] = str(member.getUser()._getPassword())
                 user_data['_root_user'] = root
@@ -97,6 +101,8 @@ def get_users_and_groups(items, root):
                                 val = unicode(val)
                         else:
                             val = unicode(val)
+                    if typ == 'date':
+                        val = str(val)
                     user_data['_properties'][pid] = val
                 USERS[user_name] = user_data
 
@@ -105,28 +111,32 @@ def store_users_and_groups():
     global USERS
     global COUNTER
     for group_name, group_data in GROUPS.items():
-        if GROUPS_NAMES[group_name]:
-            group_data['_name'] += '_'+GROUP_NAMES[group_name]
-        write(group_data)
+        if GROUP_NAMES[group_name]:
+            group_data['_name'] += '_'+group_data['_plone_site'].strip('/').split('/')[-1]
+        write(group_data, GTEMP)
         print '   |--> '+str(COUNTER)+' - '+str(group_data['_name'])+' IN: '+group_data['_plone_site']
         COUNTER += 1
     for user_name, user_data in USERS.items():
         groups = []
         for group in user_data['_groups']:
-            groups.append(GROUP_NAMES[group])
+            if GROUP_NAMES[group]:
+                group.replace(' ', '_').replace('-', '_')
+                groups.append(group+'_'+user_data['_plone_site'].strip('/').split('/')[-1])
+            else:
+                groups.append(group)
         user_data['_groups'] = groups
-        write(user_data)
+        write(user_data, UTEMP)
         COUNTER += 1
         print '   |--> '+str(COUNTER)+' - '+str(user_data['_username'])+' IN: '+user_data['_plone_site']
     print '----------------------------  --------------------------------------'
 
 
 
-def write(item):
+def write(item, temp):
     SUBTEMP = str(COUNTER/1000) # 1000 files per folder
-    if not os.path.isdir(os.path.join(TEMP, SUBTEMP)):
-        os.mkdir(os.path.join(TEMP, SUBTEMP))
+    if not os.path.isdir(os.path.join(temp, SUBTEMP)):
+        os.mkdir(os.path.join(temp, SUBTEMP))
 
-    f = open(os.path.join(TEMP, SUBTEMP, str(TEMP)+'.json'), 'wb')
+    f = open(os.path.join(temp, SUBTEMP, str(COUNTER % 1000)+'.json'), 'wb')
     simplejson.dump(item, f, indent=4)
     f.close()
