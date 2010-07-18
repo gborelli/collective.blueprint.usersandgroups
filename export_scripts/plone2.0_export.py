@@ -132,7 +132,7 @@ def store_users_and_groups():
 def fix_group_names(groupnames, data):
     groups = []
     for group in groupnames:
-        rgroup.replace(' ', '_').replace('-', '_')
+        rgroup = group.replace(' ', '_').replace('-', '_')
         if GROUP_NAMES[group]:
             groups.append(rgroup+'_'+data['_plone_site'].strip('/').split('/')[-1])
         else:
