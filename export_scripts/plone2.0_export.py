@@ -122,8 +122,8 @@ def store_users_and_groups():
         print '   |--> '+str(COUNTER)+' - '+str(group_data['_groupname'])+' IN: '+group_data['_plone_site']
         COUNTER += 1
     for user_name, user_data in USERS.items():
-        groups = fix_group_names(user_data['_groups'], user_data)
-        user_data['_groups'] = groups
+        groups = fix_group_names(user_data['_user_groups'], user_data)
+        user_data['_user_groups'] = groups
         write(user_data, UTEMP)
         COUNTER += 1
         print '   |--> '+str(COUNTER)+' - '+str(user_data['_username'])+' IN: '+user_data['_plone_site']
