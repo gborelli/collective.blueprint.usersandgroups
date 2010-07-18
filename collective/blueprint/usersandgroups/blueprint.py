@@ -128,14 +128,10 @@ class UpdateGroupProperties(object):
             if not group:
                 yield item; continue
 
-            groups = item.get('_group_groups', []) + ['AuthenticatedUsers']
             if item.get('_root_group', False):
                 self.gtool.editGroup(item['_groupname'],
-                                    roles=item['_roles'],
-                                    groups=groups)
+                                    roles=item['_roles'])
             elif item.get('_groupname', False):
-                self.gtool.editGroup(item['_groupname'],
-                                    groups=groups)
 
                 # setting local roles
                 try:
@@ -145,6 +141,13 @@ class UpdateGroupProperties(object):
                 else:
                     if IRoleManager.providedBy(obj):
                         obj.manage_addLocalRoles(item['_groupname'], item['_roles'])
+
+            if item.get('_group_groups', False):
+                try:
+                    self.gtool.editGroup(item['_groupname'],
+                                    groups=item.get('_group_groups', []))
+                except:
+                    pass
 
             group.setGroupProperties(item['_properties'])
             yield item
