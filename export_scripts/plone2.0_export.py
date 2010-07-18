@@ -114,7 +114,7 @@ def store_users_and_groups():
     global USERS
     global COUNTER
     for group_name, group_data in GROUPS.items():
-        group = fix_group_names((group_data['_groupname'],), group_data)
+        group = fix_group_names((group_data['_groupname'],), group_data)[0]
         group_data['_groupname'] = group
         groups = fix_group_names(group_data['_group_groups'], group_data)
         group_data['_group_groups'] = groups
