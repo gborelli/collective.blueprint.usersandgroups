@@ -2,6 +2,7 @@ from zope.interface import implements, classProvides
 from collective.transmogrifier.interfaces import ISection, ISectionBlueprint
 from Products.CMFCore.utils import getToolByName
 from zope.app.component.hooks import getSite
+from AccessControl.interfaces import IRoleManager
 
 
 class CreateUser(object):
@@ -21,13 +22,34 @@ class CreateUser(object):
     def __iter__(self):
         for item in self.previous:
 
-            if '_user__password' not in item.keys() or \
-               '_user_username' not in item.keys():
-                continue
+            if '_password' not in item.keys() or \
+               '_username' not in item.keys():
+                yield item; continue
 
-            if self.regtool.isMemberIdAllowed(item['_user_username']):
-                self.regtool.addMember(item['_user_username'],
-                                item['_user__password'].encode('utf-8'))
+            if self.regtool.isMemberIdAllowed(item['_username']):
+                self.regtool.addMember(item['_username'],
+                                item['_password'].encode('utf-8'))
+            yield item
+
+
+class CreateGroup(object):
+    """ """
+
+    implements(ISection)
+    classProvides(ISectionBlueprint)
+
+    def __init__(self, transmogrifier, name, options, previous):
+        self.transmogrifier = transmogrifier
+        self.name = name
+        self.options = options
+        self.previous = previous
+        self.context = transmogrifier.context
+        self.gtool = getToolByName(self.context, 'portal_groups')
+
+    def __iter__(self):
+        for item in self.previous:
+            if item.get('_groupname', False):
+                self.gtool.addGroup(item['_groupname'])
             yield item
 
 
@@ -50,50 +72,36 @@ class UpdateUserProperties(object):
     def __iter__(self):
         for item in self.previous:
 
-            if '_user_username' in item.keys():
-                member = self.memtool.getMemberById(item['_user_username'])
-                props = {}
-                for key in item:
-                    if key.startswith('_user_') and \
-                            not key.startswith('_user__'):
-                        props[key[6:]] = item[key]
-                member.setMemberProperties(props)
+            if '_username' in item.keys():
+                member = self.memtool.getMemberById(item['_username'])
+                if not member:
+                    yield item; continue
+                member.setMemberProperties(item['_properties'])
 
                 # add member to group
-                if item.get('groups'):
-                    for groupid in item['groups']:
+                if item.get('_user_groups', False):
+                    for groupid in item['_user_groups']:
                         group = self.gtool.getGroupById(groupid)
                         if group:
-                            group.addMember(item['_user_username'])
+                            group.addMember(item['_username'])
 
                 # setting global roles
-                if item.get('roles'):
+                if item.get('_root_roles', False):
                     self.portal.acl_users.userFolderEditUser(
-                                item['_user_username'],
+                                item['_username'],
                                 None,
-                                item['roles'])
+                                item['_root_roles'])
 
-            yield item
+                # setting local roles
+                if item.get('_local_roles', False):
+                    try:
+                        obj = self.portal.unrestrictedTraverse(item['_plone_site'])
+                    except (AttributeError, KeyError):
+                        pass
+                    else:
+                        if IRoleManager.providedBy(obj):
+                            obj.manage_addLocalRoles(item['_username'], item['_local_roles'])
 
-
-class CreateGroup(object):
-    """ """
-
-    implements(ISection)
-    classProvides(ISectionBlueprint)
-
-    def __init__(self, transmogrifier, name, options, previous):
-        self.transmogrifier = transmogrifier
-        self.name = name
-        self.options = options
-        self.previous = previous
-        self.context = transmogrifier.context
-        self.gtool = getToolByName(self.context, 'portal_groups')
-
-    def __iter__(self):
-        for item in self.previous:
-            if item.get('_group_id'):
-                self.gtool.addGroup(item['_group_id'])
             yield item
 
 
@@ -113,20 +121,30 @@ class UpdateGroupProperties(object):
 
     def __iter__(self):
         for item in self.previous:
-            if not item.get('_group_id'):
+            if not item.get('_groupname', False):
                 yield item; continue
 
-            group = self.gtool.getGroupById(item['_group_id'])
+            group = self.gtool.getGroupById(item['_groupname'])
+            if not group:
+                yield item; continue
 
-            if item.get('_group_roles'):
-                self.gtool.editGroup(item['_group_id'],
-                                    roles=item['_group_roles'])
+            groups = item.get('_group_groups', []) + ['AuthenticatedUsers']
+            if item.get('_root_group', False):
+                self.gtool.editGroup(item['_groupname'],
+                                    roles=item['_roles'],
+                                    groups=groups)
+            elif item.get('_groupname', False):
+                self.gtool.editGroup(item['_groupname'],
+                                    groups=groups)
 
-            props = {}
-            for key in item:
-                if key.startswith('_group_') and \
-                   key != '_group_id' and \
-                   key != '_group_roles':
-                    props[key[7:]] = item[key]
-            group.setProperties(props)
+                # setting local roles
+                try:
+                    obj = self.portal.unrestrictedTraverse(item['_plone_site'])
+                except (AttributeError, KeyError):
+                    pass
+                else:
+                    if IRoleManager.providedBy(obj):
+                        obj.manage_addLocalRoles(item['_groupname'], item['_roles'])
+
+            group.setGroupProperties(item['_properties'])
             yield item
