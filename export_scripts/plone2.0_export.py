@@ -67,7 +67,7 @@ def get_users_and_groups(items, root):
                         group_data['_properties'][pid] = val
                     if getattr(group, 'getGroups', False):
                         groups = group.getGroup().getGroups()
-                        group_data['_group_groups'] = [g.getId() for g in groups]
+                        group_data['_group_groups'] = groups
                     GROUPS[group_name] = group_data
             if not getattr(item, 'portal_membership', False):
                 continue
@@ -116,23 +116,28 @@ def store_users_and_groups():
     for group_name, group_data in GROUPS.items():
         if GROUP_NAMES[group_name]:
             group_data['_name'] += '_'+group_data['_plone_site'].strip('/').split('/')[-1]
+        groups = fix_group_names(group_data['_group_groups'], group_data)
+        group_data['_group_groups'] = groups
         write(group_data, GTEMP)
-        print '   |--> '+str(COUNTER)+' - '+str(group_data['_name'])+' IN: '+group_data['_plone_site']
+        print '   |--> '+str(COUNTER)+' - '+str(group_data['_groupname'])+' IN: '+group_data['_plone_site']
         COUNTER += 1
     for user_name, user_data in USERS.items():
-        groups = []
-        for group in user_data['_groups']:
-            if GROUP_NAMES[group]:
-                group.replace(' ', '_').replace('-', '_')
-                groups.append(group+'_'+user_data['_plone_site'].strip('/').split('/')[-1])
-            else:
-                groups.append(group)
+        groups = fix_group_names(user_data['_groups'], user_data)
         user_data['_groups'] = groups
         write(user_data, UTEMP)
         COUNTER += 1
         print '   |--> '+str(COUNTER)+' - '+str(user_data['_username'])+' IN: '+user_data['_plone_site']
     print '----------------------------  --------------------------------------'
 
+def fix_group_names(groupnames, data):
+    groups = []
+    for group in groupnames:
+        if GROUP_NAMES[group]:
+            group.replace(' ', '_').replace('-', '_')
+            groups.append(group+'_'+data['_plone_site'].strip('/').split('/')[-1])
+        else:
+            groups.append(group)
+    return groups
 
 
 def write(item, temp):
