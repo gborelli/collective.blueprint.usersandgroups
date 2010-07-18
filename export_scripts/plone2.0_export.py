@@ -49,7 +49,7 @@ def get_users_and_groups(items, root):
                     else:
                         GROUP_NAMES[group_name] = 0
                     group_data = {}
-                    group_data['_name'] = group_name
+                    group_data['_groupname'] = group_name
                     group_data['_roles'] = group.getRoles()
                     group_data['_plone_site'] = '/'.join(item.getPhysicalPath())
                     group_data['_properties'] = {}
@@ -65,6 +65,9 @@ def get_users_and_groups(items, root):
                             else:
                                 val = unicode(val)
                         group_data['_properties'][pid] = val
+                    if getattr(group, 'getGroups', False):
+                        groups = group.getGroup().getGroups()
+                        group_data['_group_groups'] = [g.getId() for g in groups]
                     GROUPS[group_name] = group_data
             if not getattr(item, 'portal_membership', False):
                 continue
@@ -86,7 +89,7 @@ def get_users_and_groups(items, root):
                     user_data['_root_roles'] = member.getRoles()
                 else:
                     user_data['_local_roles'] = member.getRoles()
-                user_data['_groups'] = []
+                user_data['_user_groups'] = []
                 user_data['_plone_site'] = '/'.join(item.getPhysicalPath())
                 if getattr(member, 'getGroups', False):
                     user_data['_user_groups'] = member.getGroups()
