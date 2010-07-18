@@ -41,7 +41,7 @@ def get_users_and_groups(items, root):
                         typ = gdtool.getPropertyType(pid)
                         properties.append((pid, typ))
                 for group in item.portal_groups.listGroups():
-                    group_name = str(group.getUserName()).replace(' ', '_').replace('-', '_')
+                    group_name = str(group.getUserName())
                     if group.getUserName() in GROUPS.keys():
                         GROUP_NAMES[group_name] = 1
                         group_name = group_name+'_'+item.getId()
@@ -114,8 +114,8 @@ def store_users_and_groups():
     global USERS
     global COUNTER
     for group_name, group_data in GROUPS.items():
-        if GROUP_NAMES[group_name]:
-            group_data['_groupname'] += '_'+group_data['_plone_site'].strip('/').split('/')[-1]
+        group = fix_group_names((group_data['_groupname'],), group_data)
+        group_data['_groupname'] = group
         groups = fix_group_names(group_data['_group_groups'], group_data)
         group_data['_group_groups'] = groups
         write(group_data, GTEMP)
@@ -132,11 +132,11 @@ def store_users_and_groups():
 def fix_group_names(groupnames, data):
     groups = []
     for group in groupnames:
+        rgroup.replace(' ', '_').replace('-', '_')
         if GROUP_NAMES[group]:
-            group.replace(' ', '_').replace('-', '_')
-            groups.append(group+'_'+data['_plone_site'].strip('/').split('/')[-1])
+            groups.append(rgroup+'_'+data['_plone_site'].strip('/').split('/')[-1])
         else:
-            groups.append(group)
+            groups.append(rgroup)
     return groups
 
 
