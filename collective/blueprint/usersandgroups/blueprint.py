@@ -132,7 +132,7 @@ class UpdateGroupProperties(object):
             if item.get('_root_group', False):
                 self.gtool.editGroup(item['_groupname'],
                                     roles=item['_roles'])
-            elif item.get('_groupname', False):
+            elif item.get('_roles', False):
 
                 # setting local roles
                 try:
