@@ -50,7 +50,13 @@ def get_users_and_groups(items, root):
                         GROUP_NAMES[group_name] = 0
                     group_data = {}
                     group_data['_groupname'] = group_name
-                    group_data['_roles'] = group.getRoles()
+                    roles = group.getRoles()
+                    local_roles = item.__ac_local_roles__
+                    if local_roles.get(group_name, False):
+                        roles += local_roles[group_name]
+                    ignoredset = set(['Authenticated', 'Member'])
+                    roles = list(set(roles).difference(ignoredset))
+                    group_data['_roles'] = roles
                     group_data['_plone_site'] = '/'.join(item.getPhysicalPath())
                     group_data['_properties'] = {}
                     group_data['_root_group'] = root
