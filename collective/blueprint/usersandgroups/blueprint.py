@@ -118,6 +118,7 @@ class UpdateGroupProperties(object):
         self.previous = previous
         self.context = transmogrifier.context
         self.gtool = getToolByName(self.context, 'portal_groups')
+        self.portal = getSite()
 
     def __iter__(self):
         for item in self.previous:
