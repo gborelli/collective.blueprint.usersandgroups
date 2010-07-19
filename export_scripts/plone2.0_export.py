@@ -53,7 +53,7 @@ def get_users_and_groups(items, root):
                     roles = group.getRoles()
                     local_roles = item.__ac_local_roles__
                     if local_roles.get(group_name, False):
-                        roles += local_roles[group_name]
+                        roles += tuple(local_roles[group_name])
                     ignoredset = set(['Authenticated', 'Member'])
                     roles = list(set(roles).difference(ignoredset))
                     group_data['_roles'] = roles
@@ -97,7 +97,7 @@ def get_users_and_groups(items, root):
                     roles = member.getRoles()
                     local_roles = item.__ac_local_roles__
                     if local_roles.get(user_name, False):
-                        roles += local_roles[user_name]
+                        roles += tuple(local_roles[user_name])
                     ignoredset = set(['Authenticated', 'Member'])
                     roles = list(set(roles).difference(ignoredset))
                     user_data['_local_roles'] = roles
