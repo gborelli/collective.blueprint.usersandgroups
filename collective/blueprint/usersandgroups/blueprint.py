@@ -101,6 +101,7 @@ class UpdateUserProperties(object):
                     else:
                         if IRoleManager.providedBy(obj):
                             obj.manage_addLocalRoles(item['_username'], item['_local_roles'])
+                            obj.reindexObjectSecurity()
 
             yield item
 
@@ -142,6 +143,7 @@ class UpdateGroupProperties(object):
                 else:
                     if IRoleManager.providedBy(obj):
                         obj.manage_addLocalRoles(item['_groupname'], item['_roles'])
+                        obj.reindexObjectSecurity()
 
             if item.get('_group_groups', False):
                 try:
