@@ -23,7 +23,6 @@ setup(name='collective.blueprint.usersandgroups',
       zip_safe=False,
       install_requires=[
           'setuptools',
-          # -*- Extra requirements: -*-
           'collective.transmogrifier',
       ],
       )
