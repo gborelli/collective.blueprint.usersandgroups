@@ -3,4 +3,9 @@
 *.swp
 /dist/
 /docs/_build/
-
+/.installed.cfg
+/bin/
+/develop-eggs/
+/eggs/
+/include/
+/lib/
