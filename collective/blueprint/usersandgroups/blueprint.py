@@ -152,5 +152,14 @@ class UpdateGroupProperties(object):
                 except:
                     pass
 
-            group.setGroupProperties(item['_properties'])
+            # With PlonePAS > 4.0b3, mutable_properties.enumerateUsers doesn't
+            # return groups anymore, so it isn't possible to search a group
+            # by its title stored in mutable_properties. Only the
+            # title in source_groups is searched.
+            # editGroup modify the title and description in source_groups
+            # plugin, then it calls setGroupProperties(kw) which set the
+            # properties on the mutable_properties plugin.
+            if '_properties' in item:
+                self.gtool.editGroup(item['_groupname'],
+                                     **item['_properties'])
             yield item
