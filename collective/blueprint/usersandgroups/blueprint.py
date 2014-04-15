@@ -1,7 +1,10 @@
 from zope.interface import implements, classProvides
 from collective.transmogrifier.interfaces import ISection, ISectionBlueprint
 from Products.CMFCore.utils import getToolByName
-from zope.app.component.hooks import getSite
+try:
+    from zope.component.hooks import getSite
+except:
+    from zope.app.component.hooks import getSite
 from AccessControl.interfaces import IRoleManager
 
 
