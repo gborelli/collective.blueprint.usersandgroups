@@ -1,8 +1,4 @@
-include *.txt
-global-exclude *pyc
-recursive-include collective *.zcml
-recursive-include docs *.py
-recursive-include docs *.rst
-recursive-include docs *.txt
-recursive-include docs Makefile
-recursive-include export_scripts *.py
+graft src/collective
+graft docs
+include *.rst
+global-exclude *.pyc
