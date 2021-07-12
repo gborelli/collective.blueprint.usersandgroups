@@ -104,7 +104,7 @@ class TestUpdateUserProperties(unittest.TestCase):
         iterrator.next()
         user = api.user.get('username')
         self.assertTrue(user)
-        fullname = user.getOrderedPropertySheets()[0].getProperty('fullname')
+        fullname = user.getProperty('fullname')
         self.assertEqual(fullname, 'João da Silva')
         roles = api.user.get_roles('username')
         roles.sort()
