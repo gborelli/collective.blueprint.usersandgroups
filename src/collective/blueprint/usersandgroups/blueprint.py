@@ -4,15 +4,14 @@ from collective.transmogrifier.interfaces import ISection
 from collective.transmogrifier.interfaces import ISectionBlueprint
 from Products.CMFCore.utils import getToolByName
 from zope.component.hooks import getSite
-from zope.interface import classProvides
-from zope.interface import implements
+from zope.interface import implementer
+from zope.interface import provider
 
 
+@provider(ISectionBlueprint)
+@implementer(ISection)
 class CreateUser(object):
     """ """
-
-    implements(ISection)
-    classProvides(ISectionBlueprint)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
@@ -37,11 +36,10 @@ class CreateUser(object):
             yield item
 
 
+@provider(ISectionBlueprint)
+@implementer(ISection)
 class CreateGroup(object):
     """ """
-
-    implements(ISection)
-    classProvides(ISectionBlueprint)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
@@ -58,11 +56,10 @@ class CreateGroup(object):
             yield item
 
 
+@provider(ISectionBlueprint)
+@implementer(ISection)
 class UpdateUserProperties(object):
     """ """
-
-    implements(ISection)
-    classProvides(ISectionBlueprint)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
@@ -113,11 +110,10 @@ class UpdateUserProperties(object):
             yield item
 
 
+@provider(ISectionBlueprint)
+@implementer(ISection)
 class UpdateGroupProperties(object):
     """ """
-
-    implements(ISection)
-    classProvides(ISectionBlueprint)
 
     def __init__(self, transmogrifier, name, options, previous):
         self.transmogrifier = transmogrifier
