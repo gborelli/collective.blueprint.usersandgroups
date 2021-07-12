@@ -107,12 +107,14 @@ class TestUpdateUserProperties(unittest.TestCase):
         fullname = user.getOrderedPropertySheets()[0].getProperty('fullname')
         self.assertEqual(fullname, 'João da Silva')
         roles = api.user.get_roles('username')
+        roles.sort()
         self.assertEqual(
             roles,
-            ['Site Administrator', 'Reviwer', 'Authenticated'],
+            ['Authenticated', 'Reviwer', 'Site Administrator', ],
         )
         groups = api.group.get_groups('username')
         groups_ids = [group.id for group in groups]
+        groups_ids.sort()
         self.assertEqual(
             groups_ids,
             ['AuthenticatedUsers', 'Site Administrators'],
