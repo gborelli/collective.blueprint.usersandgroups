@@ -3,13 +3,11 @@
 from collective.blueprint.usersandgroups.blueprint import CreateGroup
 from collective.blueprint.usersandgroups.blueprint import CreateUser
 from collective.blueprint.usersandgroups.blueprint import UpdateUserProperties
-from collective.blueprint.usersandgroups.testing import (
-    COLLECTIVE_BLUEPRINT_USERSANDGROUPS_INTEGRATION_TESTING  # noqa: E501,
-)
+from collective.blueprint.usersandgroups.testing import \
+    COLLECTIVE_BLUEPRINT_USERSANDGROUPS_INTEGRATION_TESTING
 from plone import api
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
-
 
 import unittest
 
@@ -18,6 +16,7 @@ class Transmogrifier:
 
     def __init__(self, context):
         self.context = context
+
 
 class TestCreateUser(unittest.TestCase):
     """Test CreateUser."""
