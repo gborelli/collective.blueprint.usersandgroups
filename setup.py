@@ -29,8 +29,8 @@ setup(
         "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     ],
     keywords='plone transmogrifier blueprint user group',
-    author='',
-    author_email='',
+    author='Rok Garbas',
+    author_email='rok@garbas.si',
     url='https://github.com/collective/collective.blueprint.usersandgroups',
     project_urls={
         'PyPI': 'https://pypi.python.org/pypi/collective.blueprint.usersandgroups',

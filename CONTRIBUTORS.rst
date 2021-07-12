@@ -1,4 +1,5 @@
 Contributors
 ============
 
-- w, f
+- Rok Garbas, rok@garbas.si
+- Wesley Barroso, wesleybl@gmail.com
