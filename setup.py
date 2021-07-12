@@ -51,6 +51,8 @@ setup(
     ],
     extras_require={
         'test': [
+            'plone.api',
+            'plone.app.testing'
         ],
     },
     entry_points="""
