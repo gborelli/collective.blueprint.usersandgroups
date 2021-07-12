@@ -38,7 +38,7 @@ class TestCreateUser(unittest.TestCase):
         ]
         create_user = CreateUser(transmogrifier, 'create.user', None, previous)
         iterrator = iter(create_user)
-        iterrator.next()
+        next(iterrator)
         user = api.user.get('username')
         self.assertTrue(user)
 
@@ -67,7 +67,7 @@ class TestCreateGroup(unittest.TestCase):
             previous
         )
         iterrator = iter(create_group)
-        iterrator.next()
+        next(iterrator)
         group = api.group.get('groupname')
         self.assertTrue(group)
 
@@ -101,7 +101,7 @@ class TestUpdateUserProperties(unittest.TestCase):
             previous,
         )
         iterrator = iter(update_user_properties)
-        iterrator.next()
+        next(iterrator)
         user = api.user.get('username')
         self.assertTrue(user)
         fullname = user.getProperty('fullname')

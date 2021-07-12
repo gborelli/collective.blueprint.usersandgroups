@@ -25,8 +25,7 @@ class CreateUser(object):
     def __iter__(self):
         for item in self.previous:
 
-            if '_password' not in item.keys() or \
-               '_username' not in item.keys():
+            if '_password' not in item or '_username' not in item:
                 yield item
                 continue
 
@@ -78,7 +77,7 @@ class UpdateUserProperties(object):
     def __iter__(self):
         for item in self.previous:
 
-            if '_username' in item.keys():
+            if '_username' in item:
                 member = self.memtool.getMemberById(item['_username'])
                 if not member:
                     yield item
