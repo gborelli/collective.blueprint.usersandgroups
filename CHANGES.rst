@@ -1,7 +1,8 @@
 0.2.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- No longer use zope.app.container.
+  [wesleybl]
 
 
 0.2.0 (2015-06-07)

@@ -3,14 +3,9 @@ from AccessControl.interfaces import IRoleManager
 from collective.transmogrifier.interfaces import ISection
 from collective.transmogrifier.interfaces import ISectionBlueprint
 from Products.CMFCore.utils import getToolByName
+from zope.component.hooks import getSite
 from zope.interface import classProvides
 from zope.interface import implements
-
-
-try:
-    from zope.component.hooks import getSite
-except ImportError:
-    from zope.app.component.hooks import getSite
 
 
 class CreateUser(object):
