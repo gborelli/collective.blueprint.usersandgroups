@@ -1,11 +1,16 @@
-from zope.interface import implements, classProvides
-from collective.transmogrifier.interfaces import ISection, ISectionBlueprint
+# -*- coding: utf-8 -*-
+from AccessControl.interfaces import IRoleManager
+from collective.transmogrifier.interfaces import ISection
+from collective.transmogrifier.interfaces import ISectionBlueprint
 from Products.CMFCore.utils import getToolByName
+from zope.interface import classProvides
+from zope.interface import implements
+
+
 try:
     from zope.component.hooks import getSite
-except:
+except ImportError:
     from zope.app.component.hooks import getSite
-from AccessControl.interfaces import IRoleManager
 
 
 class CreateUser(object):
@@ -27,11 +32,14 @@ class CreateUser(object):
 
             if '_password' not in item.keys() or \
                '_username' not in item.keys():
-                yield item; continue
+                yield item
+                continue
 
             if self.regtool.isMemberIdAllowed(item['_username']):
-                self.regtool.addMember(item['_username'],
-                                item['_password'].encode('utf-8'))
+                self.regtool.addMember(
+                    item['_username'],
+                    item['_password'].encode('utf-8'),
+                )
             yield item
 
 
@@ -78,7 +86,8 @@ class UpdateUserProperties(object):
             if '_username' in item.keys():
                 member = self.memtool.getMemberById(item['_username'])
                 if not member:
-                    yield item; continue
+                    yield item
+                    continue
                 member.setMemberProperties(item['_properties'])
 
                 # add member to group
@@ -91,9 +100,10 @@ class UpdateUserProperties(object):
                 # setting global roles
                 if item.get('_root_roles', False):
                     self.portal.acl_users.userFolderEditUser(
-                                item['_username'],
-                                None,
-                                item['_root_roles'])
+                        item['_username'],
+                        None,
+                        item['_root_roles'],
+                    )
 
                 # setting local roles
                 if item.get('_local_roles', False):
@@ -127,15 +137,19 @@ class UpdateGroupProperties(object):
     def __iter__(self):
         for item in self.previous:
             if not item.get('_groupname', False):
-                yield item; continue
+                yield item
+                continue
 
             group = self.gtool.getGroupById(item['_groupname'])
             if not group:
-                yield item; continue
+                yield item
+                continue
 
             if item.get('_root_group', False):
-                self.gtool.editGroup(item['_groupname'],
-                                    roles=item['_roles'])
+                self.gtool.editGroup(
+                    item['_groupname'],
+                    roles=item['_roles'],
+                )
             elif item.get('_roles', False):
 
                 # setting local roles
@@ -150,9 +164,11 @@ class UpdateGroupProperties(object):
 
             if item.get('_group_groups', False):
                 try:
-                    self.gtool.editGroup(item['_groupname'],
-                                    groups=item.get('_group_groups', []))
-                except:
+                    self.gtool.editGroup(
+                        item['_groupname'],
+                        groups=item.get('_group_groups', []),
+                    )
+                except AttributeError:
                     pass
 
             # With PlonePAS > 4.0b3, mutable_properties.enumerateUsers doesn't
